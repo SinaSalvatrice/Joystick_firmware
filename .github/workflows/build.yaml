@@ -71,6 +71,9 @@ jobs:
         with:
           name: joystick-pad-firmware
           path: |
+            qmk_firmware/*.hex
+            qmk_firmware/*.bin
+            qmk_firmware/*.uf2
             qmk_firmware/.build/*.hex
             qmk_firmware/.build/*.bin
             qmk_firmware/.build/*.uf2

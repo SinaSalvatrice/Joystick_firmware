@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "analog.h"
+#include "gpio.h"
 #include "joystick.h"
 
 static uint16_t joy_center_x = 512;
@@ -27,7 +28,7 @@ static int16_t normalize_axis(uint16_t raw, uint16_t center) {
 }
 
 void keyboard_post_init_user(void) {
-    setPinInputHigh(JOYSTICK_SW_PIN);
+    gpio_set_pin_input_high(JOYSTICK_SW_PIN);
 
     // Read center once after power-up while stick is untouched.
     joy_center_x = analogReadPin(JOYSTICK_X_PIN);
@@ -47,7 +48,11 @@ void housekeeping_task_user(void) {
     joystick_set_axis(0, axis_x);
     joystick_set_axis(1, axis_y);
 
-    joystick_set_button(0, !readPin(JOYSTICK_SW_PIN));
+    if (!gpio_read_pin(JOYSTICK_SW_PIN)) {
+        register_joystick_button(0);
+    } else {
+        unregister_joystick_button(0);
+    }
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {

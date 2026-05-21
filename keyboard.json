@@ -2,8 +2,8 @@
   "keyboard_name": "joystick_pad",
   "manufacturer": "SinaSalvatrice",
   "maintainer": "SinaSalvatrice",
-  "bootloader": "atmel-dfu",
-  "processor": "atmega32u4",
+  "bootloader": "rp2040",
+  "processor": "RP2040",
   "url": "",
   "usb": {
     "vid": "0xFEED",
@@ -11,7 +11,7 @@
     "device_version": "1.0.0"
   },
   "matrix_pins": {
-    "direct": [["B1"]]
+    "direct": [["GP16"]]
   },
   "features": {
     "bootmagic": true,

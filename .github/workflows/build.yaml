@@ -19,11 +19,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install AVR toolchain
+      - name: Install ARM toolchain
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-avr binutils-avr avr-libc
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -64,9 +64,8 @@ jobs:
           shopt -s nullglob
           mkdir -p artifacts
 
-          # This repo currently targets atmega32u4 + atmel-dfu, which produces a
-          # .hex firmware. If the keyboard is later moved to a UF2-capable target,
-          # the generated .uf2 will be collected automatically as well.
+          # This repo is configured for RP2040, so the primary firmware artifact is
+          # expected to be a .uf2. Hex/bin files are also collected as a fallback.
           for pattern in \
             "$QMK_HOME"/*.uf2 \
             "$QMK_HOME"/.build/*.uf2 \

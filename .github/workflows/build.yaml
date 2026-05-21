@@ -1,0 +1,69 @@
+name: Build QMK Firmware
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "qmk/**"
+      - ".github/workflows/build.yaml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "qmk/**"
+      - ".github/workflows/build.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Checkout QMK firmware
+        uses: actions/checkout@v4
+        with:
+          repository: qmk/qmk_firmware
+          path: qmk_firmware
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip \
+            gcc-avr \
+            binutils-avr \
+            avr-libc \
+            dfu-programmer \
+            dfu-util \
+            make
+
+      - name: Install QMK CLI
+        run: pip3 install --user qmk
+
+      - name: Add QMK CLI to PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Copy custom keyboard into QMK tree
+        run: |
+          mkdir -p qmk_firmware/keyboards/sinasalvatrice
+          cp -R qmk/keyboards/sinasalvatrice/joystick_pad qmk_firmware/keyboards/sinasalvatrice/
+
+      - name: Build firmware
+        working-directory: qmk_firmware
+        run: qmk compile -kb sinasalvatrice/joystick_pad -km default
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: joystick-pad-firmware
+          path: |
+            qmk_firmware/.build/*.hex
+            qmk_firmware/.build/*.bin
+            qmk_firmware/.build/*.uf2
+          if-no-files-found: error

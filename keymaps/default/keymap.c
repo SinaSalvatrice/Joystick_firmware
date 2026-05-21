@@ -1,7 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "analog.h"
 #include "gpio.h"
-#include "joystick.h"
 #ifdef OLED_ENABLE
 #    include "oled_driver.h"
 #endif
@@ -12,10 +11,11 @@ static int16_t  last_axis_x   = 0;
 static int16_t  last_axis_y   = 0;
 static bool     stick_pressed = false;
 
-joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
-    JOYSTICK_AXIS_VIRTUAL,
-    JOYSTICK_AXIS_VIRTUAL,
-};
+static bool left_pressed  = false;
+static bool right_pressed = false;
+static bool up_pressed    = false;
+static bool down_pressed  = false;
+static bool enter_pressed = false;
 
 static const int16_t direction_threshold = 48;
 
@@ -36,8 +36,22 @@ static int16_t normalize_axis(uint16_t raw, uint16_t center) {
         return 0;
     }
 
-    // Scale from around 10-bit ADC space to HID joystick range.
+    // Scale from the ADC range to a compact signed value for threshold checks.
     return clamp_axis(delta / 4);
+}
+
+static void sync_key_state(uint16_t keycode, bool *was_pressed, bool is_pressed) {
+    if (is_pressed == *was_pressed) {
+        return;
+    }
+
+    if (is_pressed) {
+        register_code(keycode);
+    } else {
+        unregister_code(keycode);
+    }
+
+    *was_pressed = is_pressed;
 }
 
 static const char *direction_name(int16_t axis_x, int16_t axis_y) {
@@ -47,31 +61,31 @@ static const char *direction_name(int16_t axis_x, int16_t axis_y) {
     bool down  = axis_y > direction_threshold;
 
     if (up && left) {
-        return "UP-LEFT";
+        return "UL";
     }
     if (up && right) {
-        return "UP-RIGHT";
+        return "UR";
     }
     if (down && left) {
-        return "DOWN-LEFT";
+        return "DL";
     }
     if (down && right) {
-        return "DOWN-RIGHT";
+        return "DR";
     }
     if (up) {
-        return "UP";
+        return "U";
     }
     if (down) {
-        return "DOWN";
+        return "D";
     }
     if (left) {
-        return "LEFT";
+        return "L";
     }
     if (right) {
-        return "RIGHT";
+        return "R";
     }
 
-    return "CENTER";
+    return "C";
 }
 
 void keyboard_post_init_user(void) {
@@ -95,26 +109,22 @@ void housekeeping_task_user(void) {
     last_axis_x = axis_x;
     last_axis_y = axis_y;
 
-    joystick_set_axis(0, axis_x);
-    joystick_set_axis(1, axis_y);
+    sync_key_state(KC_LEFT, &left_pressed, axis_x < -direction_threshold);
+    sync_key_state(KC_RIGHT, &right_pressed, axis_x > direction_threshold);
+    sync_key_state(KC_UP, &up_pressed, axis_y < -direction_threshold);
+    sync_key_state(KC_DOWN, &down_pressed, axis_y > direction_threshold);
 
     stick_pressed = !gpio_read_pin(JOYSTICK_SW_PIN);
-
-    if (stick_pressed) {
-        register_joystick_button(0);
-    } else {
-        unregister_joystick_button(0);
-    }
+    sync_key_state(KC_ENT, &enter_pressed, stick_pressed);
 }
 
 #ifdef OLED_ENABLE
 bool oled_task_user(void) {
     oled_clear();
-    oled_write_ln_P(PSTR("JOYSTICK"), false);
+    oled_write_ln_P(PSTR("ARROWS"), false);
     oled_write_ln(direction_name(last_axis_x, last_axis_y), false);
-    oled_write_P(PSTR("SW:"), false);
+    oled_write_ln_P(PSTR("BTN ENT"), false);
     oled_write_ln_P(stick_pressed ? PSTR("PUSH") : PSTR("OPEN"), false);
-    oled_write_ln_P(PSTR("KEY: JS1"), false);
     return false;
 }
 #endif

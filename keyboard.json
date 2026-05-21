@@ -18,7 +18,6 @@
     "command": false,
     "console": false,
     "extrakey": true,
-    "oled": true,
     "nkro": true
   },
   "layouts": {

@@ -10,6 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYBOARD_NAME: joystick_pad
+      KEYMAP_NAME: default
+      QMK_HOME: ${{ github.workspace }}/qmk_firmware
 
     steps:
       - name: Check out repository
@@ -28,11 +32,24 @@ jobs:
 
       - name: Set up QMK dependencies
         shell: bash
-        run: qmk setup -y qmk/qmk_firmware
+        run: qmk setup -y qmk/qmk_firmware -H "$QMK_HOME"
+
+      - name: Stage keyboard into QMK tree
+        shell: bash
+        run: |
+          rm -rf "$QMK_HOME/keyboards/$KEYBOARD_NAME"
+          mkdir -p "$QMK_HOME/keyboards/$KEYBOARD_NAME"
+          rsync -a \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'artifacts' \
+            ./ "$QMK_HOME/keyboards/$KEYBOARD_NAME/"
 
       - name: Build firmware
         shell: bash
-        run: qmk compile -km default
+        run: |
+          cd "$QMK_HOME"
+          qmk compile -kb "$KEYBOARD_NAME" -km "$KEYMAP_NAME"
 
       - name: Collect firmware artifacts
         shell: bash
@@ -43,7 +60,13 @@ jobs:
           # This repo currently targets atmega32u4 + atmel-dfu, which produces a
           # .hex firmware. If the keyboard is later moved to a UF2-capable target,
           # the generated .uf2 will be collected automatically as well.
-          for pattern in *.uf2 .build/*.uf2 *.hex .build/*.hex *.bin .build/*.bin; do
+          for pattern in \
+            "$QMK_HOME"/*.uf2 \
+            "$QMK_HOME"/.build/*.uf2 \
+            "$QMK_HOME"/*.hex \
+            "$QMK_HOME"/.build/*.hex \
+            "$QMK_HOME"/*.bin \
+            "$QMK_HOME"/.build/*.bin; do
             for file in $pattern; do
               cp "$file" artifacts/
             done

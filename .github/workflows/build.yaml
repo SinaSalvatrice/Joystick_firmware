@@ -36,6 +36,7 @@ jobs:
           repository: qmk/qmk_firmware
           path: qmk_firmware
           fetch-depth: 1
+          submodules: recursive
 
       - name: Install build dependencies
         run: |

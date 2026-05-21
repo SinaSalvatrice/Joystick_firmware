@@ -4,12 +4,18 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "qmk/**"
+      - "config.h"
+      - "keyboard.json"
+      - "rules.mk"
+      - "keymaps/**"
       - ".github/workflows/build.yaml"
   pull_request:
     branches: ["main"]
     paths:
-      - "qmk/**"
+      - "config.h"
+      - "keyboard.json"
+      - "rules.mk"
+      - "keymaps/**"
       - ".github/workflows/build.yaml"
   workflow_dispatch:
 
@@ -21,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout this repository
+      - name: Checkout keyboard repository
         uses: actions/checkout@v4
 
       - name: Checkout QMK firmware
@@ -49,10 +55,11 @@ jobs:
       - name: Add QMK CLI to PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Copy custom keyboard into QMK tree
+      - name: Copy keyboard into QMK tree
         run: |
-          mkdir -p qmk_firmware/keyboards/sinasalvatrice
-          cp -R qmk/keyboards/sinasalvatrice/joystick_pad qmk_firmware/keyboards/sinasalvatrice/
+          mkdir -p qmk_firmware/keyboards/sinasalvatrice/joystick_pad
+          cp config.h keyboard.json rules.mk qmk_firmware/keyboards/sinasalvatrice/joystick_pad/
+          cp -R keymaps qmk_firmware/keyboards/sinasalvatrice/joystick_pad/
 
       - name: Build firmware
         working-directory: qmk_firmware

@@ -43,6 +43,7 @@ jobs:
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'artifacts' \
+            --exclude 'qmk_firmware' \
             ./ "$QMK_HOME/keyboards/$KEYBOARD_NAME/"
 
       - name: Build firmware

@@ -14,6 +14,11 @@
 #define I2C1_SDA_PIN GP0
 #define I2C1_SCL_PIN GP1
 
+// WS2812 LED strip
+#define WS2812_DI_PIN GP7
+#define RGBLIGHT_LED_COUNT 18
+#define RGBLIGHT_LIMIT_VAL 35
+
 // Ignore tiny movements around center.
 #define JOYSTICK_DEADZONE 24
 

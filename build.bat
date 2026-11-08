@@ -32,9 +32,8 @@ set "MSYS_ROOT=C:\QMK_MSYS"
 if defined QMK_MSYS_ROOT set "MSYS_ROOT=%QMK_MSYS_ROOT%"
 set "BUILD_WITH_MSYS=0"
 
-if exist "%MSYS_ROOT%\usr\bin\bash.exe" if exist "%MSYS_ROOT%\usr\bin\cygpath.exe" (
-    set "BUILD_WITH_MSYS=1"
-) else (
+if exist "%MSYS_ROOT%\usr\bin\bash.exe" if exist "%MSYS_ROOT%\usr\bin\cygpath.exe" set "BUILD_WITH_MSYS=1"
+if "!BUILD_WITH_MSYS!"=="0" (
     REM An existing MINGW64 environment can compile directly.
     if /I not "%MSYSTEM%"=="MINGW64" goto :missing_msys
     where qmk >nul 2>&1

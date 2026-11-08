@@ -4,7 +4,7 @@
   "maintainer": "SinaSalvatrice",
   "bootloader": "rp2040",
   "processor": "RP2040",
-  "url": "",
+  "url": "https://github.com/SinaSalvatrice/Joystick_firmware",
   "usb": {
     "vid": "0xFEED",
     "pid": "0x0901",
@@ -20,7 +20,7 @@
     ]
   },
   "features": {
-    "bootmagic": true,
+    "bootmagic": false,
     "command": false,
     "console": false,
     "extrakey": true,

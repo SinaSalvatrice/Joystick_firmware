@@ -25,12 +25,13 @@ if not defined QMK_ROOT (
     goto :failed
 )
 
+set "BUILD_WITH_MSYS=0"
 where qmk >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: QMK CLI is not on PATH.
-    echo Install QMK and run in a terminal with the QMK CLI available.
-    echo QMK MSYS is recommended for Windows.
-    goto :failed
+    REM QMK MSYS fallback allows a normal BAT double-click.
+    set "BUILD_WITH_MSYS=1"
+    if not exist "C:\QMK_MSYS\usr\bin\bash.exe" goto :missing_cli
+    if not exist "C:\QMK_MSYS\usr\bin\cygpath.exe" goto :missing_cli
 )
 
 echo.
@@ -53,10 +54,18 @@ REM Delete obsolete I2C config from previously staged versions.
 if exist "%TARGET%\halconf.h" del /Q "%TARGET%\halconf.h"
 
 echo Compiling RP2040 QMK firmware...
-pushd "%QMK_ROOT%"
-call qmk compile -kb joystick_pad -km default
-set "COMPILE_RESULT=!ERRORLEVEL!"
-popd
+if "!BUILD_WITH_MSYS!"=="1" (
+    REM Convert Windows path to MSYS /c/... format before running QMK.
+    for /f "delims=" %%P in ('C:\QMK_MSYS\usr\bin\cygpath.exe -u "%QMK_ROOT%"') do set "QMK_POSIX=%%P"
+    if not defined QMK_POSIX goto :failed
+    "C:\QMK_MSYS\usr\bin\bash.exe" -lc "cd '!QMK_POSIX!' && qmk compile -kb joystick_pad -km default"
+    set "COMPILE_RESULT=!ERRORLEVEL!"
+) else (
+    pushd "%QMK_ROOT%"
+    call qmk compile -kb joystick_pad -km default
+    set "COMPILE_RESULT=!ERRORLEVEL!"
+    popd
+)
 if not "!COMPILE_RESULT!"=="0" goto :failed
 
 if not exist "%SOURCE%artifacts" mkdir "%SOURCE%artifacts"
@@ -82,6 +91,11 @@ echo SUCCESS: firmware in "%SOURCE%artifacts"
 echo Transfer the UF2 to the RP2040 bootloader drive.
 pause
 exit /b 0
+
+:missing_cli
+echo ERROR: No QMK CLI was found on PATH and QMK MSYS was not found at C:\QMK_MSYS.
+echo Install QMK MSYS, or run this BAT with QMK available on PATH.
+goto :failed
 
 :failed
 echo.

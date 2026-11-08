@@ -25,13 +25,20 @@ if not defined QMK_ROOT (
     goto :failed
 )
 
+REM Never call the Windows pip QMK command from ordinary cmd.exe.
+REM That picks Windows Python and fails the mandatory MINGW64 check.
+REM Always prefer an isolated login shell in QMK MSYS.
+set "MSYS_ROOT=C:\QMK_MSYS"
+if defined QMK_MSYS_ROOT set "MSYS_ROOT=%QMK_MSYS_ROOT%"
 set "BUILD_WITH_MSYS=0"
-where qmk >nul 2>&1
-if errorlevel 1 (
-    REM QMK MSYS fallback allows a normal BAT double-click.
+
+if exist "%MSYS_ROOT%\usr\bin\bash.exe" if exist "%MSYS_ROOT%\usr\bin\cygpath.exe" (
     set "BUILD_WITH_MSYS=1"
-    if not exist "C:\QMK_MSYS\usr\bin\bash.exe" goto :missing_cli
-    if not exist "C:\QMK_MSYS\usr\bin\cygpath.exe" goto :missing_cli
+) else (
+    REM An existing MINGW64 environment can compile directly.
+    if /I not "%MSYSTEM%"=="MINGW64" goto :missing_msys
+    where qmk >nul 2>&1
+    if errorlevel 1 goto :missing_msys
 )
 
 echo.
@@ -55,12 +62,19 @@ if exist "%TARGET%\halconf.h" del /Q "%TARGET%\halconf.h"
 
 echo Compiling RP2040 QMK firmware...
 if "!BUILD_WITH_MSYS!"=="1" (
-    REM Convert Windows path to MSYS /c/... format before running QMK.
-    for /f "delims=" %%P in ('C:\QMK_MSYS\usr\bin\cygpath.exe -u "%QMK_ROOT%"') do set "QMK_POSIX=%%P"
+    for /f "delims=" %%P in ('"%MSYS_ROOT%\usr\bin\cygpath.exe" -u "%QMK_ROOT%"') do set "QMK_POSIX=%%P"
     if not defined QMK_POSIX goto :failed
-    "C:\QMK_MSYS\usr\bin\bash.exe" -lc "cd '!QMK_POSIX!' && qmk compile -kb joystick_pad -km default"
+
+    REM Select real MinGW64 and rebuild PATH via the MSYS login profile.
+    REM In particular, do not inherit Windows Python's Scripts directory.
+    set "MSYSTEM=MINGW64"
+    set "CHERE_INVOKING=1"
+    set "MSYS2_PATH_TYPE=minimal"
+    echo Build shell: QMK MSYS MINGW64
+    "%MSYS_ROOT%\usr\bin\bash.exe" --login -c "cd '!QMK_POSIX!' && echo MSYSTEM=$MSYSTEM && command -v qmk && qmk compile -kb joystick_pad -km default"
     set "COMPILE_RESULT=!ERRORLEVEL!"
 ) else (
+    echo Build shell: existing MINGW64 terminal
     pushd "%QMK_ROOT%"
     call qmk compile -kb joystick_pad -km default
     set "COMPILE_RESULT=!ERRORLEVEL!"
@@ -92,9 +106,11 @@ echo Transfer the UF2 to the RP2040 bootloader drive.
 pause
 exit /b 0
 
-:missing_cli
-echo ERROR: No QMK CLI was found on PATH and QMK MSYS was not found at C:\QMK_MSYS.
-echo Install QMK MSYS, or run this BAT with QMK available on PATH.
+:missing_msys
+echo ERROR: This firmware needs the QMK MSYS MINGW64 environment.
+echo The Windows Python QMK command is not a compatible build shell.
+echo Install QMK MSYS at C:\QMK_MSYS and double-click build.bat.
+echo If installed elsewhere, set QMK_MSYS_ROOT to its installation folder.
 goto :failed
 
 :failed

@@ -39,7 +39,8 @@ active only while the button is held. If both are held, Layer 2 wins.
 1. Install QMK with an RP2040-capable ARM toolchain.
 2. Set `QMK_HOME` to the `qmk_firmware` checkout, or place it in one of the
    common locations searched by `build.bat`.
-3. Run `build.bat` on Windows in an environment with `qmk` on PATH.
+3. Run `build.bat` on Windows. It uses `qmk` on PATH, or automatically
+   falls back to QMK MSYS installed at `C:\\QMK_MSYS` when available.
    The script copies the keyboard files into
    `qmk_firmware/keyboards/joystick_pad` and runs
    `qmk compile -kb joystick_pad -km default`.

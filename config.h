@@ -3,20 +3,14 @@
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U
 
-#define JOYSTICK_AXIS_COUNT 2
-#define JOYSTICK_BUTTON_COUNT 2
+// RP2040 analog inputs are limited to GP26..GP29.
+// GP0 and GP1 are digital-only and cannot read analog joystick axes.
+#define JOYSTICK_X_PIN GP26
+#define JOYSTICK_Y_PIN GP27
 
-#define JOYSTICK_X_PIN GP28
-#define JOYSTICK_Y_PIN GP29
-#define JOYSTICK_SW_PIN GP16
+// GP2 = stick click (Select), GP3 = momentary layer 1,
+// GP4 = momentary layer 2. Buttons are configured in keyboard.json.
 
-#define I2C_DRIVER I2CD0
-#define I2C1_SDA_PIN GP0
-#define I2C1_SCL_PIN GP1
-
-// Ignore tiny movements around center.
+// ADC values are 10-bit by default in QMK (0..1023).
 #define JOYSTICK_DEADZONE 24
-
-#define OLED_DISPLAY_ADDRESS 0x3C
-#define OLED_DISPLAY_64X32
-#define OLED_BRIGHTNESS 120
+#define JOYSTICK_DIRECTION_THRESHOLD 48

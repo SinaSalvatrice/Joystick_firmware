@@ -61,17 +61,16 @@ if exist "%TARGET%\halconf.h" del /Q "%TARGET%\halconf.h"
 
 echo Compiling RP2040 QMK firmware...
 if "!BUILD_WITH_MSYS!"=="1" (
-    for /f "delims=" %%P in ('"%MSYS_ROOT%\usr\bin\cygpath.exe" -u "%QMK_ROOT%"') do set "QMK_POSIX=%%P"
-    if not defined QMK_POSIX goto :failed
-
-    REM Select real MinGW64 and rebuild PATH via the MSYS login profile.
-    REM In particular, do not inherit Windows Python's Scripts directory.
+    REM QMK MSYS inherits current working directory with CHERE_INVOKING=1.
+    REM No cygpath conversion (the former FOR/F command had broken Windows quoting).
     set "MSYSTEM=MINGW64"
     set "CHERE_INVOKING=1"
     set "MSYS2_PATH_TYPE=minimal"
     echo Build shell: QMK MSYS MINGW64
-    "%MSYS_ROOT%\usr\bin\bash.exe" --login -c "cd '!QMK_POSIX!' && echo MSYSTEM=$MSYSTEM && command -v qmk && qmk compile -kb joystick_pad -km default"
+    pushd "%QMK_ROOT%"
+    "%MSYS_ROOT%\usr\bin\bash.exe" --login -c "echo MSYSTEM=$MSYSTEM && command -v qmk && qmk compile -kb joystick_pad -km default"
     set "COMPILE_RESULT=!ERRORLEVEL!"
+    popd
 ) else (
     echo Build shell: existing MINGW64 terminal
     pushd "%QMK_ROOT%"

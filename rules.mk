@@ -1,6 +1,4 @@
 BOARD = GENERIC_RP_RP2040
 
-JOYSTICK_ENABLE = yes
+# The stick outputs keyboard directions; QMK joystick HID is not needed.
 ANALOG_DRIVER_REQUIRED = yes
-OLED_ENABLE = yes
-OLED_DRIVER = ssd1306

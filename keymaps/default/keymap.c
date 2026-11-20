@@ -58,10 +58,10 @@ void housekeeping_task_user(void) {
     uint16_t up = KC_UP, down = KC_DOWN;
 
     switch (get_highest_layer(layer_state | default_layer_state)) {
-        case 1: // Hold GP3: WASD navigation
+        case 1: // Hold GP2: WASD navigation
             left = KC_A; right = KC_D; up = KC_W; down = KC_S;
             break;
-        case 2: // Hold GP4: page/document navigation
+        case 2: // Hold GP3: page/document navigation
             left = KC_HOME; right = KC_END;
             up = KC_PGUP; down = KC_PGDN;
             break;
@@ -76,8 +76,8 @@ void housekeeping_task_user(void) {
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    // GP2: Select/Enter   GP3: momentary Layer 1   GP4: momentary Layer 2
-    [0] = LAYOUT(KC_ENT, MO(1), MO(2)),
-    [1] = LAYOUT(KC_SPC, MO(1), MO(2)),
-    [2] = LAYOUT(KC_ESC, MO(1), MO(2))
+    // GP2: momentary Layer 1   GP3: momentary Layer 2   GP4: stick click
+    [0] = LAYOUT(MO(1), MO(2), KC_ENT),
+    [1] = LAYOUT(MO(1), MO(2), KC_SPC),
+    [2] = LAYOUT(MO(1), MO(2), KC_ESC)
 };

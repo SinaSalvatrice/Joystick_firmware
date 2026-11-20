@@ -8,30 +8,31 @@ QMK keyboard firmware for a two-axis analog joystick and three buttons on an **R
 | --- | --- | --- |
 | Joystick axis X | GP26 / ADC0 | Left / right |
 | Joystick axis Y | GP27 / ADC1 | Up / down |
-| Joystick click | GP2 -> GND | Select |
-| Button 1 | GP3 -> GND | Momentary Layer 1 |
-| Button 2 | GP4 -> GND | Momentary Layer 2 |
+| Button 1 | GP2 -> GND | Momentary Layer 1 |
+| Button 2 | GP3 -> GND | Momentary Layer 2 |
+| Joystick click | GP4 -> GND | Select |
 
 **Important:** RP2040 GPIO **GP0 and GP1 are not ADC pins**. Analog joystick
 outputs wired there **cannot** be read by this QMK/RP2040 firmware. Move the
 analog signal wires to GP26 and GP27 (or use an external ADC). Switches use
 internal pull-ups, so connect each button between its GPIO pin and GND.
 
-There is no OLED, LED strip, or other peripheral in the QMK configuration.
-The separate `Ino/joystick.ino` is an older ESP32-C3 example, not part of
-the QMK build.
+The separate ESP32-C3 Arduino sketch in `Ino/joystick.ino` reads the X and Y
+potentiometers on GPIO0 and GPIO1, the two buttons on GPIO2 and GPIO3,
+and the joystick click on GPIO4. Its OLED and LED strip are part of the
+Arduino sketch only.
 
 ## Default actions
 
-| Stick action | Base layer | Hold GP3 (Layer 1) | Hold GP4 (Layer 2) |
+| Stick action | Base layer | Hold GP2 (Layer 1) | Hold GP3 (Layer 2) |
 | --- | --- | --- | --- |
 | Up | Arrow Up | W | Page Up |
 | Down | Arrow Down | S | Page Down |
 | Left | Arrow Left | A | Home |
 | Right | Arrow Right | D | End |
-| Press GP2 | Enter | Space | Escape |
+| Press GP4 | Enter | Space | Escape |
 
-GP3 and GP4 use QMK `MO(1)` / `MO(2)`: the corresponding layer stays
+GP2 and GP3 use QMK `MO(1)` / `MO(2)`: the corresponding layer stays
 active only while the button is held. If both are held, Layer 2 wins.
 
 ## Local build (Windows)

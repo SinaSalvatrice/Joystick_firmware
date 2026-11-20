@@ -27,8 +27,8 @@ U8G2_SSD1306_72X40_ER_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 #define JOY_Y   1
 #define JOY_SW  4
 
-#define BTN_1   3
-#define BTN_2   10
+#define BTN_1   2
+#define BTN_2   3
 
 
 // =====================================================

@@ -8,8 +8,8 @@
 #define JOYSTICK_X_PIN GP26
 #define JOYSTICK_Y_PIN GP27
 
-// GP2 = stick click (Select), GP3 = momentary layer 1,
-// GP4 = momentary layer 2. Buttons are configured in keyboard.json.
+// GP2 and GP3 are the layer buttons. GP4 is the stick click.
+// The direct-pin order is configured in keyboard.json.
 
 // ADC values are 10-bit by default in QMK (0..1023).
 #define JOYSTICK_DEADZONE 24
